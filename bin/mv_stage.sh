@@ -33,6 +33,7 @@ FILEOUT="${UNIQ}_${FILEOUT}"
 #unset WAIT
 
 OUTDIR=${DEEPSKY_STAGE_DIR} 
+[[ -d $OUTDIR ]] || mkdir -p $OUTDIR
 
 echo "File new name: $FILEOUT"
 echo "Destiny directory: $OUTDIR"
