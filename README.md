@@ -4,8 +4,9 @@ Server-side infrastructure to handle DeepSky data uploaded and automated publish
 
 ## Setup
 
-Have `incrontab` ("[inotify cron](https://inotify.aiken.cz/?section=incron&page=about&lang=en)") installed and add to its table the `.../deepsky_data_server/upload/`. In my case, I am supervising inotify's `IN_MODEV_TO` events:
+Have `incrontab` ("[inotify cron](https://inotify.aiken.cz/?section=incron&page=about&lang=en)") installed and add to its table the `.../deepsky_data_server/upload/`.
 
+In particular, if supervising inotify's `IN_MODED_TO` events:
 ```bash
 $ incrontab -l
 /path/to/deepsky/upload   IN_MOVED_TO   /path/to/deepsky/bin/incron_trigger.sh   $%   $#   $@
