@@ -27,19 +27,19 @@ function kill_procs () {
     kill -15 $PID
   done
 }
-trap kill_procs INT #EXIT ERR
+trap kill_procs INT TERM #EXIT ERR
 
 
 # Start fake daemons
 # ------------------
-# - crontab: periodically run 'unpack_data' in 'stage/' dir
-DELTA_CRONTAB='10'
-fake_crontab "$DELTA_CRONTAB" &
-add_pid $!
-
 # - inotify: (periodically) run add data to 'upload'
 DELTA_INOTIFY='RANDOM'
 fake_inotify "$DELTA_INOTIFY" &
+add_pid $!
+
+# - crontab: periodically run 'unpack_data' in 'stage/' dir
+DELTA_CRONTAB='10'
+fake_crontab "$DELTA_CRONTAB" &
 add_pid $!
 
 # =============================================================================

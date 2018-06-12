@@ -14,7 +14,9 @@ echo "New file received: $FILE"
 echo "Origin directory: $DIR"
 
 # Read environment definitions
-source "${DIR}/env.sh"
+# source "${DIR}/env.sh"
+HERE=$(cd `dirname $BASH_SOURCE`; pwd)
+source "${HERE}/env.sh"
 
 : ${DEEPSKY_STAGE_DIR:?'DeepSky data stage dir not defined.'}
 
@@ -32,7 +34,7 @@ FILEOUT="${UNIQ}_${FILEOUT}"
 #sleep "$WAIT"s
 #unset WAIT
 
-OUTDIR=${DEEPSKY_STAGE_DIR} 
+OUTDIR=${DEEPSKY_STAGE_DIR}
 [[ -d $OUTDIR ]] || mkdir -p $OUTDIR
 
 echo "File new name: $FILEOUT"
@@ -46,4 +48,3 @@ mv -v "$FILETMP" "$FILEOUT"
 echo "File move complete"
 
 rm -f $FILEIN && echo "Origin cleaned"
-
