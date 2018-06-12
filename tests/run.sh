@@ -6,32 +6,18 @@ DATA="${HERE}/data"
 
 DIR_UPLOAD="${HERE}/../upload"
 
+source ${HERE}/fake_daemons.sh
+
 # =============================================================================
 # Start fake daemons:
-#
-# - crontab: periodically run 'unpack_data' in 'stage/' dir
-DELTA_CRONTAB='30'
 
-bash << EOF
-while true; do
-  ${HERE}/../bin/unpack_data.sh
-  sleep $DELTA_CRONTAB
-done
-EOF
+# - crontab: periodically run 'unpack_data' in 'stage/' dir
+DELTA_CRONTAB='10'
+fake_crontab $DELTA_CRONTAB
 
 # - inotify: (periodically) run add data to 'upload'
 DELTA_INOTIFY='RANDOM'
-
-bash << EOF
-i=0
-while true; do
-  sleep $DELTA_INOTIFY
-  FILES=$(ls -1 $DATA)
-  FILE_i=${FILES[i]}
-  cp ${DATA}/${FILE_i} ${DIR_UPLOAD}/.
-  ${HERE}/../bin/mv_stage.sh _whatever_ $FILE_i $DIR_UPLOAD
-done
-EOF
+fake_inotify $DELTA_INOTIFY
 
 # =============================================================================
 
