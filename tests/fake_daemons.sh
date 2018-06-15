@@ -30,8 +30,8 @@ function fake_inotify () {
 
     FILES=(${DATA}/*.tar)
     if [ "$i" -ge "${#FILES[@]}" ]; then
-      echo "Data files are finished. Exiting."
-      # exit
+      echo "Data files (in $DATA) are finished. Finishing this process."
+      return 0
     fi
     FILE_i=$(basename "${FILES[$i]}")
 
@@ -42,14 +42,14 @@ function fake_inotify () {
     cp "${DATA}/${FILE_i}" "${DIR_UPLOAD}/."
     "${HERE}/../bin/mv_stage.sh" _fakesignal_ "$FILE_i" "$DIR_UPLOAD"
 
-    # Check if copy was done right.
-    # Moved file should have a name starting with '15*'
-    #
-    FILE_MV=(${DIR_UPLOAD}/15*${FILE_i})
-    if [[ -z "$FILE_MV" || "${#FILE_MV[*]}" = 0 ]]; then
-      echo "File NOT copied. Exiting"
-      # exit 2
-    fi
+    # # Check if copy was done right.
+    # # Moved file should have a name starting with '15*'
+    # #
+    # FILE_MV=(${DIR_UPLOAD}/15*${FILE_i})
+    # if [[ -z "$FILE_MV" || "${#FILE_MV[*]}" = 0 ]]; then
+    #   echo "File NOT copied. Exiting"
+    #   return 2
+    # fi
 
     i=$((i+1))
   done
