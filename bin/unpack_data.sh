@@ -17,7 +17,10 @@ source "${HERE}/env.sh"
 
 INPUT_DIR="${DEEPSKY_STAGE_DIR}"
 
-OUTPUT_DIR="${DEEPSKY_TEMP_DIR}"
+TEMP_DIR="${DEEPSKY_TEMP_DIR}"
+[ -d "$TEMP_DIR" ] || mkdir -p "$TEMP_DIR"
+
+OUTPUT_DIR="${DEEPSKY_PROC_INPUT}"
 [ -d "$OUTPUT_DIR" ] || mkdir -p "$OUTPUT_DIR"
 
 ARCHIVE_DIR="${DEEPSKY_ARCHIVE_DIR}"
@@ -26,13 +29,20 @@ ARCHIVE_DIR="${DEEPSKY_ARCHIVE_DIR}"
 # NOW=$(date +%s)
 
 INPUT_GLOB='15*.tar'
-FILES_EXTRACT='table_flux_detections.csv'
-OUTPUT_FILE='table_flux_all.csv'
+
+FILEIN_FLUX_TABLE='table_flux_detections.csv'
+FILEOUT_FLUX_TABLE=('table_flux_all.csv')
 
 # function get_tgz_list () {
 #   local FILES=(${INPUT_DIR}/${INPUT_GLOB})
 #   [ ! -z "$FILES" ] && echo $FILES
 # }
+
+function read_flux_table () {
+  SOURCE_DIR="$1"
+  RUNID=$(ls -1 $SOURCE_DIR | head -n1)
+  cat "${SOURCE_DIR}/${RUNID}/${FILEIN_FLUX_TABLE}" >> "${OUTPUT_DIR}/${FILEOUT_FLUX_TABLE}"
+}
 
 function extract_files () {
   local TARBALLS="$@"
@@ -43,10 +53,13 @@ function extract_files () {
     echo "..extracting file $TAR.."
     TAR_DIR=$(basename $TAR)
     TAR_DIR=${TAR_DIR%.tar}
-    mkdir ${OUTPUT_DIR}/${TAR_DIR}
-    tar -x -f "$TAR" -C "${OUTPUT_DIR}/${TAR_DIR}"
+    mkdir ${TEMP_DIR}/${TAR_DIR}
+    tar -x -f "$TAR" -C "${TEMP_DIR}/${TAR_DIR}" || { echo "..extraction failed"; return 1; }
+    read_flux_table "${TEMP_DIR}/${TAR_DIR}" || { echo "..extraction failed"; return 1; }
     echo "..extraction succeded, moving file to archive.."
-    [ $? ] && mv $TAR $ARCHIVE_DIR
+    mv $TAR $ARCHIVE_DIR
+    echo "..cleaning temporary files.."
+    rm -rf "${TEMP_DIR}/${TAR_DIR}"
   done
 }
 
@@ -56,7 +69,7 @@ if [[ ${#TARBALLS[*]} -gt 0 ]]; then
   echo "..${#TARBALLS[*]} files found"
   echo "Extract all files in tmp area.."
   extract_files ${TARBALLS[*]}
-  echo "..done"
+  [ $? ] && echo "..done"
 else
   echo "..no files found"
 fi
