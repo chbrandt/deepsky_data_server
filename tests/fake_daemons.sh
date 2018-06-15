@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -xv
 shopt -s nullglob
 
 function fake_crontab () {
