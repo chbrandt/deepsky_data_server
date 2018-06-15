@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 set -ue
 
+HERE=$(cd `dirname $BASH_SOURCE`; pwd)
+source "${HERE}/env.sh"
+
+if [ -s "${DEEPSKY_PROC_ROOT}/env.sh" ]; then
+  source "${DEEPSKY_PROC_ROOT}/env.sh"
+fi
+
+function remove_lock () {
+  rm -f "$LOCK_TABLE_READ" 2> /dev/null
+}
+trap remove_lock ERR EXIT
+
+
 ## The table we are going to handle here is sampled below:
 #
 # #RA;DEC;NH;ENERGY_SLOPE;ENERGY_SLOPE_ERROR;EXPOSURE_TIME;nufnu_3keV(erg.s-1.cm-2);nufnu_error_3keV(erg.s-1.cm-2);nufnu_0.5keV(erg.s-1.cm-2);nufnu_error_0.5keV(erg.s-1.cm-2);upper_limit_0.5keV(erg.s-1.cm-2);nufnu_1.5keV(erg.s-1.cm-2);nufnu_error_1.5keV(erg.s-1.cm-2);upper_limit_1.5keV(erg.s-1.cm-2);nufnu_4.5keV(erg.s-1.cm-2);nufnu_error_4.5keV(erg.s-1.cm-2);upper_limit_4.5keV(erg.s-1.cm-2)
@@ -41,12 +54,22 @@ function clean_content () {
   sed -i.BKP_cont -E "$EXPR2" $FILE
 }
 
-
-# Argument of the script is the table filename
+# Check if there is anybody writing to table, if not put a lock and do the job
 #
-CSVTABLE="$1"
-cp "$CSVTABLE" "${CSVTABLE}.BKP"
+while [ -f "$LOCK_TABLE_WRITE"]; do
+  SLEEP=$(echo "scale=1; 2 * $RANDOM / 32767" | bc -l)
+  sleep $SLEEP
+done
+touch "$LOCK_TABLE_READ"
 
-clean_headline "$CSVTABLE"
+FILEIN="${DEEPSKY_TABLE_SPOOL}/${FILENAME_TABLE_FLUX}"
+cp "$FILEIN" "${FILEIN}.BKP"
 
-clean_content "$CSVTABLE"
+clean_headline "$FILEIN"
+
+clean_content "$FILEIN"
+
+FILEOUT="${DEEPSKY_TABLE_TEMP}/${FILENAME_TABLE_FLUX}"
+mv "$FILEIN" "$FILEOUT"
+
+remove_lock

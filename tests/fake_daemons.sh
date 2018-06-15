@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+set -u
 shopt -s nullglob
 
-function fake_crontab () {
+function fake_crontab_unpack () {
   # Argument "$1" is an integer value
   #
   local DELTA_CRONTAB="$1"
@@ -12,12 +13,21 @@ function fake_crontab () {
   done
 }
 
+function fake_crontab_table_temp () {
+  # Argument "$1" is an integer value
+  #
+  local DELTA_CRONTAB="$1"
+
+  while true; do
+    ${HERE}/../bin/table_preproc.sh
+    sleep "$DELTA_CRONTAB"
+  done
+}
+
 function fake_inotify () {
   # Argument "$1" may be any integer number or the 'RANDOM' for dynamic values
   #
   local DELTA_INOTIFY="$1"
-  echo '-----------------------------------------------------------------------'
-  echo 'INOTIFY-fake'
 
   local i=0
   while true; do
@@ -53,5 +63,4 @@ function fake_inotify () {
 
     i=$((i+1))
   done
-  echo '-----------------------------------------------------------------------'
 }

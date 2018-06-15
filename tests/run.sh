@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eE
+set -eEu
 
 HERE=$(cd `dirname $BASH_SOURCE`; pwd)
 
@@ -45,8 +45,15 @@ echo "Fake inotify PID: $PID"
 add_pid $PID
 
 # - crontab: periodically run 'unpack_data' in 'stage/' dir
-DELTA_CRONTAB='5'
-fake_crontab "$DELTA_CRONTAB" &
+DELTA_CRONTAB_UNPACK='5'
+fake_crontab_unpack "$DELTA_CRONTAB_UNPACK" &
+PID=$!
+echo "Fake crontab PID: $PID"
+add_pid $PID
+
+# - crontab: periodically run 'table_preproc' in 'processing/spool' dir
+DELTA_CRONTAB_PREPROC='5'
+fake_crontab_table_temp "$DELTA_CRONTAB_PREPROC" &
 PID=$!
 echo "Fake crontab PID: $PID"
 add_pid $PID

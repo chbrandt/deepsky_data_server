@@ -5,6 +5,11 @@ shopt -s nullglob
 HERE=$(cd `dirname $BASH_SOURCE`; pwd)
 source "${HERE}/env.sh"
 
+function remove_lock () {
+  rm -f "$LOCK_TABLE_WRITE" 2> /dev/null
+}
+trap remove_lock ERR EXIT
+
 # This script is meant to be called by `cron` every hour or so.
 
 # This script will unpack all DeepSky results (.tgz) in  the staged area and
@@ -20,7 +25,7 @@ INPUT_DIR="${DEEPSKY_STAGE_DIR}"
 TEMP_DIR="${DEEPSKY_TEMP_DIR}"
 [ -d "$TEMP_DIR" ] || mkdir -p "$TEMP_DIR"
 
-OUTPUT_DIR="${DEEPSKY_PROC_INPUT}"
+OUTPUT_DIR="${DEEPSKY_PROC_SPOOL}"
 [ -d "$OUTPUT_DIR" ] || mkdir -p "$OUTPUT_DIR"
 
 ARCHIVE_DIR="${DEEPSKY_ARCHIVE_DIR}"
@@ -41,7 +46,13 @@ FILEOUT_FLUX_TABLE=('table_flux_all.csv')
 function read_flux_table () {
   SOURCE_DIR="$1"
   RUNID=$(ls -1 $SOURCE_DIR | head -n1)
+  while [ -f "${LOCK_TABLE_READ}" ]; do
+    SLEEP=$(echo "scale=1; 2 * $RANDOM / 32767" | bc -l)
+    sleep $SLEEP
+  done
+  touch "$LOCK_TABLE_WRITE"
   cat "${SOURCE_DIR}/${RUNID}/${FILEIN_FLUX_TABLE}" >> "${OUTPUT_DIR}/${FILEOUT_FLUX_TABLE}"
+  remove_lock
 }
 
 function extract_files () {
