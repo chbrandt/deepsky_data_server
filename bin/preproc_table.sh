@@ -32,12 +32,13 @@ function clean_content () {
   local FILE="$1"
 
   # Exempt first line from this cleaning (this is clean_headline's job)
-  EXPR1='1p'
+  # EXPR1='1p'
 
   # Remove comment '#' lines
   EXPR2='/^#/d'
 
-  sed -i.BKP_cont -E -e "$EXPR1" -e "$EXPR2" $FILE
+  # sed -i.BKP_cont -E -e "$EXPR1" -e "$EXPR2" $FILE
+  sed -i.BKP_cont -E "$EXPR2" $FILE
 }
 
 
