@@ -8,7 +8,7 @@ function fake_crontab_unpack () {
   local DELTA_CRONTAB="$1"
 
   while true; do
-    ${HERE}/../bin/unpack_data.sh
+    ${HERE}/../bin/data_unpack.sh
     sleep "$DELTA_CRONTAB"
   done
 }
@@ -50,7 +50,7 @@ function fake_inotify () {
     # - then, 'mv_stage.sh' is triggered with a signal, filename and dir
     #
     cp "${DATA}/${FILE_i}" "${DIR_UPLOAD}/."
-    "${HERE}/../bin/mv_stage.sh" _fakesignal_ "$FILE_i" "$DIR_UPLOAD"
+    "${HERE}/../bin/data_move_stage.sh" _fakesignal_ "$FILE_i" "$DIR_UPLOAD"
 
     # # Check if copy was done right.
     # # Moved file should have a name starting with '15*'

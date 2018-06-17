@@ -52,7 +52,7 @@ echo "Fake crontab PID: $PID"
 add_pid $PID
 
 # - crontab: periodically run 'table_preproc' in 'processing/spool' dir
-DELTA_CRONTAB_PREPROC='5'
+DELTA_CRONTAB_PREPROC='15'
 fake_crontab_table_temp "$DELTA_CRONTAB_PREPROC" &
 PID=$!
 echo "Fake crontab PID: $PID"
