@@ -28,12 +28,12 @@ done
 # Copy the final table so that we can append the new (TEST) content to it,
 # `table_proc_xmatch.py` will select the primary sources from such (combined) table
 #
-if [ -f "$FILENAME_FINAL" ]; then
-  cp "$FILENAME_FINAL" "$FILENAME_FINAL_TMP"
-  tail -n +2 "$FILENAME_TEST" >> "$FILENAME_FINAL_TMP"
-else
+# if [ -f "$FILENAME_FINAL" ]; then
+#   cp "$FILENAME_FINAL" "$FILENAME_FINAL_TMP"
+#   tail -n +2 "$FILENAME_TEST" >> "$FILENAME_FINAL_TMP"
+# else
   cp "$FILENAME_TEST" "$FILENAME_FINAL_TMP"
-fi
+# fi
 
 source activate xmatch
 python "${HERE}/table_proc_xmatch.py" "$FILENAME_FINAL_TMP" "$FILENAME_FINAL"
