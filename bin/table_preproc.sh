@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -ue
 
+THIS=$(basename $BASH_SOURCE)
 HERE=$(cd `dirname $BASH_SOURCE`; pwd)
+
+echo "----------------------------------------------------------------------"
+echo "BEGIN: ($THIS) clean flux table"
+
 source "${HERE}/env.sh"
 
 if [ -s "${DEEPSKY_PROC_ROOT}/env.sh" ]; then
@@ -29,6 +34,8 @@ trap remove_lock ERR EXIT
 #
 # We want to fix column names and remove unwanted entries from the table
 
+# Remove columns 'unit' information and the '#' for the header line
+#
 function clean_headline () {
   local FILE="$1"
 
@@ -41,6 +48,7 @@ function clean_headline () {
   sed -i.BKP_head -E -e "$EXPR1" -e "$EXPR2" $FILE
 }
 
+# Because we have appended
 function clean_content () {
   local FILE="$1"
 
@@ -54,22 +62,35 @@ function clean_content () {
   sed -i.BKP_cont -E "$EXPR2" $FILE
 }
 
+FILEIN="${DEEPSKY_TABLE_SPOOL}/${FILENAME_TABLE_FLUX}"
+
+[ -f "$FILEIN" ] || exit 0
+
 # Check if there is anybody writing to table, if not put a lock and do the job
 #
-while [ -f "$LOCK_TABLE_WRITE"]; do
+while [ -f "$LOCK_TABLE_WRITE" ]; do
   SLEEP=$(echo "scale=1; 2 * $RANDOM / 32767" | bc -l)
   sleep $SLEEP
 done
 touch "$LOCK_TABLE_READ"
 
-FILEIN="${DEEPSKY_TABLE_SPOOL}/${FILENAME_TABLE_FLUX}"
+# Make a copy (this is for debug)
 cp "$FILEIN" "${FILEIN}.BKP"
 
-clean_headline "$FILEIN"
+# Apply cleaning of header and content
+#
+clean_headline "$FILEIN" && clean_content "$FILEIN"
 
-clean_content "$FILEIN"
-
+# If destination (pre-final) table is already there, we have to append to it,
+# otherwise, we can move/copy this one.
+#
 FILEOUT="${DEEPSKY_TABLE_TEMP}/${FILENAME_TABLE_FLUX}"
-mv "$FILEIN" "$FILEOUT"
 
+if [ -f "$FILEOUT" ]; then
+  tail -n +2 "$FILEIN" >> "$FILEOUT"
+else
+  cp "$FILEIN" "$FILEOUT"
+fi
+
+# Remove the lock
 remove_lock

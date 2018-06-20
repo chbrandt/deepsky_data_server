@@ -58,6 +58,13 @@ PID=$!
 echo "Fake crontab PID: $PID"
 add_pid $PID
 
+# - crontab: periodically run 'table_preproc' in 'processing/spool' dir
+DELTA_CRONTAB_XMATCH='30'
+fake_crontab_table_xmatch "$DELTA_CRONTAB_XMATCH" &
+PID=$!
+echo "Fake crontab PID: $PID"
+add_pid $PID
+
 unset PID
 # =============================================================================
 
