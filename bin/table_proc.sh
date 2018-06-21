@@ -21,7 +21,7 @@ FILENAME_FINAL_TMP="${DEEPSKY_TABLE_FINAL}/${FILENAME_TABLE_FLUX}.tmp"
 
 # Check if table in "Test" is being handled, wait if that's the case
 #
-while [ -f "$LOCK_TABLE_READ" ]; do
+while [ -f "$LOCK_TABLE_READ_SPOOL" ]; do
   sleep 10
 done
 
@@ -32,11 +32,11 @@ done
 #   cp "$FILENAME_FINAL" "$FILENAME_FINAL_TMP"
 #   tail -n +2 "$FILENAME_TEST" >> "$FILENAME_FINAL_TMP"
 # else
-  cp "$FILENAME_TEST" "$FILENAME_FINAL_TMP"
+mv "$FILENAME_TEST" "$FILENAME_FINAL_TMP"
 # fi
 
 source activate xmatch
 python "${HERE}/table_proc_xmatch.py" "$FILENAME_FINAL_TMP" "$FILENAME_FINAL"
 
 rm "$FILENAME_FINAL_TMP"
-rm "$FILENAME_TEST"
+# rm "$FILENAME_TEST"

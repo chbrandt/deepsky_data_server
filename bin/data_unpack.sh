@@ -34,7 +34,7 @@ fi
 : ${DEEPSKY_TABLE_SPOOL:?'DeepSky spool dir not defined'}
 
 function remove_lock () {
-  rm -f "$LOCK_TABLE_WRITE" 2> /dev/null
+  rm -f "$LOCK_TABLE_WRITE_SPOOL" 2> /dev/null
 }
 trap remove_lock ERR EXIT
 
@@ -56,12 +56,12 @@ function read_flux_table () {
   # Check there is anybody else (for instance, `table_preproc.sh`) reading
   # the output table file. If busy, wait; when free, create a lock and proceed.
   #
-  while [ -f "${LOCK_TABLE_READ}" ]; do
+  while [ -f "${LOCK_TABLE_READ_SPOOL}" ]; do
     echo "File '$FILEOUT' in use, wait.."
     SLEEP=$(echo "scale=1; 2 * $RANDOM / 32767" | bc -l)
     sleep $SLEEP
   done
-  touch "$LOCK_TABLE_WRITE"
+  touch "$LOCK_TABLE_WRITE_SPOOL"
 
   cat "$FILEIN" >> "$FILEOUT"
   echo "File '$FILEIN' appended to '$FILEOUT'"

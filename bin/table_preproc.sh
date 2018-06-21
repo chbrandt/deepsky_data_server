@@ -14,7 +14,7 @@ if [ -s "${DEEPSKY_PROC_ROOT}/env.sh" ]; then
 fi
 
 function remove_lock () {
-  rm -f "$LOCK_TABLE_READ" 2> /dev/null
+  rm -f "$LOCK_TABLE_READ_SPOOL" 2> /dev/null
 }
 trap remove_lock ERR EXIT
 
@@ -68,11 +68,11 @@ FILEIN="${DEEPSKY_TABLE_SPOOL}/${FILENAME_TABLE_FLUX}"
 
 # Check if there is anybody writing to table, if not put a lock and do the job
 #
-while [ -f "$LOCK_TABLE_WRITE" ]; do
+while [ -f "$LOCK_TABLE_WRITE_SPOOL" ]; do
   SLEEP=$(echo "scale=1; 2 * $RANDOM / 32767" | bc -l)
   sleep $SLEEP
 done
-touch "$LOCK_TABLE_READ"
+touch "$LOCK_TABLE_READ_SPOOL"
 
 # Make a copy (this is for debug)
 cp "$FILEIN" "${FILEIN}.BKP"
@@ -91,6 +91,9 @@ if [ -f "$FILEOUT" ]; then
 else
   cp "$FILEIN" "$FILEOUT"
 fi
+
+# Remove table in "Spool" since we have just copied it to "Temp"
+rm "$FILEIN"
 
 # Remove the lock
 remove_lock
