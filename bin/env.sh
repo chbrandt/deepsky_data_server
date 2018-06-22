@@ -49,4 +49,4 @@ LOCK_TABLE_READ_TEMP="${DEEPSKY_TABLE_TEMP_DIR}/TABLE_READ.lock"
 
 # Repository for GAVO tables
 #
-REPO_GAVO_DEEPSKY="${DEEPSKY_ROOT}/gavo_deepsky"
+REPO_GAVO_DEEPSKY="${DEEPSKY_ROOT}/../gavo_deepsky"
