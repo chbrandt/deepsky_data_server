@@ -37,7 +37,7 @@ if __name__ == '__main__':
     df_tmp['RA'] = coords.icrs.ra
     df_tmp['DEC'] = coords.icrs.dec
 
-    df_tmp['snr'] = df_tmp['nufnu_3keV'] / df_tmp['nufnu_error_3keV']
+    df_tmp['SNR'] = df_tmp['EXPOSURE_TIME'] + df_tmp['nufnu_3keV'] / df_tmp['nufnu_error_3keV']
 
     if df_final is not None:
         min_index = df_final['OBJID'].max() + 1
@@ -52,11 +52,9 @@ if __name__ == '__main__':
     rad = Angle(7, 'arcsec')
 
     from xmatch import xmatch
-    xcat = xmatch(df, df, cols, cols, radius=rad, snr_column='snr')
+    xcat = xmatch(df, df, cols, cols, radius=rad, snr_column='SNR')
 
     df_xcat = df.set_index('OBJID').loc[xcat[('B','OBJID')].astype(int)]
     df_xcat.reset_index(inplace=True)
 
-    # match_file = '{}_primary_sources.csv'.format(table_file_in[:-4])
-    # xcat.to_csv(match_file)
-    df_xcat.to_csv(table_file_out, sep=SEP, index=False)
+    df_xcat.to_csv(table_file_out, sep=SEP, index=False, float_format='%g')

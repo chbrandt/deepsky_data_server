@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -ue
 
-# This script merge the alrealdy existing table in DEEPSKY_TABLE_FINAL
+# This script merges the alrealdy existing table in DEEPSKY_TABLE_FINAL_DIR
 # to keep the unique, primary sources.
 
 HERE=$(cd `dirname $BASH_SOURCE`; pwd)
@@ -11,32 +11,53 @@ if [ -s "${DEEPSKY_PROC_ROOT}/env.sh" ]; then
   source "${DEEPSKY_PROC_ROOT}/env.sh"
 fi
 
-FILENAME_TEST="${DEEPSKY_TABLE_TEMP}/${FILENAME_TABLE_FLUX}"
-FILENAME_FINAL="${DEEPSKY_TABLE_FINAL}/${FILENAME_TABLE_FLUX}"
-FILENAME_FINAL_TMP="${DEEPSKY_TABLE_FINAL}/${FILENAME_TABLE_FLUX}.tmp"
+function remove_lock () {
+  rm -f "$LOCK_TABLE_READ_TEMP" 2> /dev/null
+}
+trap remove_lock ERR EXIT
 
-# If there is NO table in the "Test" directory, there is nothing to do
+
+# Move table from the "Test" area to a temporary file to be combined with
+# (possibly) existing "Final" table and xmatch/filter for primary sources.
+# The concatenation of "Test" table to "Final" (if there is one already)
+# is done *inside* the python script `table_proc_xmatch.py`.
 #
-[ -f "$FILENAME_TEST" ] || exit 0
+function xmatch_table () {
+  # local FILENAME_FINAL="${DEEPSKY_TABLE_FINAL_DIR}/${FILENAME_TABLE_FLUX}"
+  local FILENAME_FINAL="$1"
 
-# Check if table in "Test" is being handled, wait if that's the case
-#
-while [ -f "$LOCK_TABLE_READ_SPOOL" ]; do
-  sleep 10
-done
+  local FILENAME_TEST="${DEEPSKY_TABLE_TEMP_DIR}/${FILENAME_TABLE_FLUX}"
+  local FILENAME_FINAL_TMP="${DEEPSKY_TABLE_FINAL_DIR}/${FILENAME_TABLE_FLUX}.tmp"
 
-# Copy the final table so that we can append the new (TEST) content to it,
-# `table_proc_xmatch.py` will select the primary sources from such (combined) table
-#
-# if [ -f "$FILENAME_FINAL" ]; then
-#   cp "$FILENAME_FINAL" "$FILENAME_FINAL_TMP"
-#   tail -n +2 "$FILENAME_TEST" >> "$FILENAME_FINAL_TMP"
-# else
-mv "$FILENAME_TEST" "$FILENAME_FINAL_TMP"
-# fi
+  # If there is NO table in the "Test" directory, there is nothing to do
+  #
+  [ -f "$FILENAME_TEST" ] || exit 0
 
-source activate xmatch
-python "${HERE}/table_proc_xmatch.py" "$FILENAME_FINAL_TMP" "$FILENAME_FINAL"
+  # Check if table in "Test" is being handled, wait if that's the case
+  #
+  while [ -f "$LOCK_TABLE_READ_SPOOL" ]; do
+    sleep 10
+  done
+  touch "$LOCK_TABLE_READ_TEMP"
 
-rm "$FILENAME_FINAL_TMP"
-# rm "$FILENAME_TEST"
+  # Move "Test" to the "Final" area; the *move* cleans the "Test" area for
+  # subsequent "Test" table storage.
+  #
+  mv "$FILENAME_TEST" "$FILENAME_FINAL_TMP"
+
+  # For the `xmatch` notice the (conda) virtualenv!
+  #
+  source activate xmatch
+  python "${HERE}/table_proc_xmatch.py" "$FILENAME_FINAL_TMP" "$FILENAME_FINAL"
+
+  rm "$FILENAME_FINAL_TMP"
+
+  remove_lock
+}
+
+FILENAME_FINAL="${DEEPSKY_TABLE_FINAL_DIR}/${FILENAME_TABLE_FLUX}"
+
+xmatch_table "$FILENAME_FINAL"
+
+source "${HERE}/git_commit.sh"
+git_commit "$FILENAME_FINAL" 'pub'

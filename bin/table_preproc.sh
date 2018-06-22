@@ -68,7 +68,7 @@ FILEIN="${DEEPSKY_TABLE_SPOOL}/${FILENAME_TABLE_FLUX}"
 
 # Check if there is anybody writing to table, if not put a lock and do the job
 #
-while [ -f "$LOCK_TABLE_WRITE_SPOOL" ]; do
+while [ -f "$LOCK_TABLE_WRITE_SPOOL" -o -f "$LOCK_TABLE_READ_TEMP" ]; do
   SLEEP=$(echo "scale=1; 2 * $RANDOM / 32767" | bc -l)
   sleep $SLEEP
 done
@@ -84,7 +84,7 @@ clean_headline "$FILEIN" && clean_content "$FILEIN"
 # If destination (pre-final) table is already there, we have to append to it,
 # otherwise, we can move/copy this one.
 #
-FILEOUT="${DEEPSKY_TABLE_TEMP}/${FILENAME_TABLE_FLUX}"
+FILEOUT="${DEEPSKY_TABLE_TEMP_DIR}/${FILENAME_TABLE_FLUX}"
 
 if [ -f "$FILEOUT" ]; then
   tail -n +2 "$FILEIN" >> "$FILEOUT"
