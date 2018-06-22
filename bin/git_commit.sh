@@ -38,18 +38,20 @@ git_commit() {
   done
   create_git_lock
 
-  local REPO="${REPO_GAVO_DEEPSKY}/${FILETYPE}"
-  [ -d "$REPO" ] || mkdir -p "$REPO"
+  local REPO_DATA_DIR="${REPO_GAVO_DEEPSKY}/${FILETYPE}"
+  [ -d "$REPO_DATA_DIR" ] || mkdir "$REPO_DATA_DIR"
 
-  cp "$FILENAME" "$REPO"
+  cp "$FILENAME" "${REPO_DATA_DIR}/."
+
+  local FILEBASENAME=$(basename "$FILENAME")
 
   # Do the commit/push
   (
-    cd "$REPO"
-
+    cd "$REPO_DATA_DIR"
+    git add "${FILEBASENAME}"
     DATE=$(date)
-    echo git commit -am "Update ${FILETYPE} at $DATE"
-    echo git push
+    git commit -am "Update ${FILETYPE} at $DATE"
+    git push
   )
 
   remove_git_lock
