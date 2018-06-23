@@ -40,18 +40,24 @@ trap remove_lock ERR EXIT
 
 
 FILEIN_FLUX_TABLE='table_flux_detections.csv'
+FILEIN_CRATE_TABLE='table_countrates_detections.csv'
 INPUT_GLOB='15*.tar'
 
 
 # Append the flux table from SOURCE_DIR to global "Spool" table
 #
-function read_flux_table () {
+function merge_flux_tables () {
   local SOURCE_DIR="$1"
 
   local RUNID=$(ls -1 $SOURCE_DIR | head -n1)
 
-  local FILEIN="${SOURCE_DIR}/${RUNID}/${FILEIN_FLUX_TABLE}"
+  local FILEIN_FLUX="${SOURCE_DIR}/${RUNID}/${FILEIN_FLUX_TABLE}"
+  local FILEIN_CRATE="${SOURCE_DIR}/${RUNID}/${FILEIN_CRATE_TABLE}"
+
   local FILEOUT="${DEEPSKY_TABLE_SPOOL}/${FILENAME_TABLE_FLUX}"
+
+  local FILETMP_CRATE="${FILEIN_CRATE}.tmp"
+  local FILETMP_MERGE="${FILEIN_FLUX}.tmp"
 
   # Check there is anybody else (for instance, `table_preproc.sh`) reading
   # the output table file. If busy, wait; when free, create a lock and proceed.
@@ -63,8 +69,13 @@ function read_flux_table () {
   done
   touch "$LOCK_TABLE_WRITE_SPOOL"
 
-  cat "$FILEIN" >> "$FILEOUT"
-  echo "File '$FILEIN' appended to '$FILEOUT'"
+  # Merge the two tables. Countrates has RA,DEC columns at the beginning.
+  #
+  cut -d';' -f3- "$FILEIN_CRATE" > "$FILETMP_CRATE"
+  paste -d';' "$FILEIN_FLUX" "$FILETMP_CRATE" > "$FILETMP_MERGE"
+
+  cat "$FILETMP_MERGE" >> "$FILEOUT"
+  echo "Files '$FILEIN_FLUX' and '$FILEIN_CRATE' merged and appended to '$FILEOUT'"
 
   # Remove lock
   remove_lock
@@ -87,7 +98,7 @@ function extract_files () {
 
     tar -x -f "$TAR" -C "${DEEPSKY_TEMP_DIR}/${TAR_DIR}" || { echo "..extraction failed"; return 1; }
 
-    read_flux_table "${DEEPSKY_TEMP_DIR}/${TAR_DIR}" || { echo "..extraction failed"; return 1; }
+    merge_flux_tables "${DEEPSKY_TEMP_DIR}/${TAR_DIR}" || { echo "..extraction failed"; return 1; }
 
     echo "..moving data bundle to archive.."
     mv $TAR $DEEPSKY_ARCHIVE_DIR

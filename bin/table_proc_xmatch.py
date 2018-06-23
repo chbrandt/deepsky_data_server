@@ -37,7 +37,7 @@ if __name__ == '__main__':
     df_tmp['RA'] = coords.icrs.ra
     df_tmp['DEC'] = coords.icrs.dec
 
-    df_tmp['SNR'] = df_tmp['EXPOSURE_TIME'] + df_tmp['nufnu_3keV'] / df_tmp['nufnu_error_3keV']
+    df_tmp['SNR'] = df_tmp['EXPOSURE_TIME'] + (df_tmp['nufnu_3keV'] / df_tmp['nufnu_error_3keV'])
 
     if df_final is not None:
         min_index = df_final['OBJID'].max() + 1
