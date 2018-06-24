@@ -46,9 +46,9 @@ function clean_headline () {
   EXPR2='1,1s/\([^)]*\)//g'
 
   # Substitute '-' for '_'
-  EXPR3='1,1s/-/_/g'
+  # EXPR3='1,1s/-/_/g'
 
-  sed -i.BKP_head -E -e "$EXPR1" -e "$EXPR2" -e "$EXPR3" $FILE
+  sed -i.BKP_head -E -e "$EXPR1" -e "$EXPR2" $FILE
 }
 
 # Because we have appended

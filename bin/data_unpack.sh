@@ -69,9 +69,10 @@ function merge_flux_tables () {
   done
   touch "$LOCK_TABLE_WRITE_SPOOL"
 
-  # Merge the two tables. Countrates has RA,DEC columns at the beginning.
+  # Merge the two tables. Countrates has RA,DEC columns at the beginning,
+  # and column EXPOSURE_TIME at position 5
   #
-  cut -d';' -f3- "$FILEIN_CRATE" > "$FILETMP_CRATE"
+  cut -d';' -f 3-4,6- "$FILEIN_CRATE" > "$FILETMP_CRATE"
   paste -d';' "$FILEIN_FLUX" "$FILETMP_CRATE" > "$FILETMP_MERGE"
 
   cat "$FILETMP_MERGE" >> "$FILEOUT"

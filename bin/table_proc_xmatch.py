@@ -28,6 +28,38 @@ def reorder_columns(df):
     return df[cols_reordered]
 
 
+def normalize_column_names(df):
+    import re
+    nc = []
+    for c in df.columns:
+        c = c.upper()
+        mat = re.search(r'(?<=_)\d.*K(?=EV)',c)
+        if not mat:
+            nc.append(c)
+            continue
+        # print("Changing column: {}".format(c))
+        val = mat.group(0)[:-1]
+        try:
+            val = float(val)
+            val = int(1000*val)
+        except ValueError:
+            if val == '0.3-10':
+                val = '300_10000'
+            elif val == '0.3-1':
+                val = '300_1000'
+            elif val == '1-2':
+                val = '1000_2000'
+            elif val == '2-10':
+                val = '2000_10000'
+            else:
+                val = val
+        _nc = re.sub(r'(?<=_)\d.*K(?=EV)','{}'.format(val), c)
+        # print("to: {}".format(_nc))
+        nc.append(_nc)
+    df.columns = nc
+    return df
+
+
 if __name__ == '__main__':
 
     if not len(sys.argv) > 2:
@@ -58,13 +90,16 @@ if __name__ == '__main__':
     df_tmp['RA'] = coords.icrs.ra
     df_tmp['DEC'] = coords.icrs.dec
 
-    df_tmp['SNR'] = df_tmp['EXPOSURE_TIME'] + (df_tmp['nufnu_3keV'] / df_tmp['nufnu_error_3keV'])
-
     # Give a name to the objects
     df_tmp['NAME'] = designation(coords.icrs.ra, coords.icrs.dec)
 
     # Reorder columns
     df_tmp = reorder_columns(df_tmp)
+
+    # Normalize (upper case without '.' or '-')
+    df_tmp = normalize_column_names(df_tmp)
+
+    df_tmp['SNR'] = df_tmp['EXPOSURE_TIME'] + (df_tmp['NUFNU_3000EV'] / df_tmp['NUFNU_ERROR_3000EV'])
 
     if df_final is not None:
         min_index = df_final['OBJID'].max() + 1
