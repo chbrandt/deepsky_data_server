@@ -24,7 +24,7 @@ def designation(ra, dec):
 def reorder_columns(df):
     first_cols = ['OBJID','RA','DEC','NAME']
     cols_reordered = first_cols[:]
-    cols_reordered.extend(c for c df.columns if c not in first_cols)
+    cols_reordered.extend(c for c in df.columns if c not in first_cols)
     return df[cols_reordered]
 
 
@@ -62,6 +62,9 @@ if __name__ == '__main__':
 
     # Give a name to the objects
     df_tmp['NAME'] = designation(coords.icrs.ra, coords.icrs.dec)
+
+    # Reorder columns
+    df_tmp = reorder_columns(df_tmp)
 
     if df_final is not None:
         min_index = df_final['OBJID'].max() + 1
