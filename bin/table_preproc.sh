@@ -45,7 +45,10 @@ function clean_headline () {
   # Remove unit information
   EXPR2='1,1s/\([^)]*\)//g'
 
-  sed -i.BKP_head -E -e "$EXPR1" -e "$EXPR2" $FILE
+  # Substitute '-' for '_'
+  EXPR3='1,1s/-/_/g'
+
+  sed -i.BKP_head -E -e "$EXPR1" -e "$EXPR2" -e "$EXPR3" $FILE
 }
 
 # Because we have appended
