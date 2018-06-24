@@ -21,6 +21,13 @@ def designation(ra, dec):
     return desig
 
 
+def reorder_columns(df):
+    first_cols = ['OBJID','RA','DEC','NAME']
+    cols_reordered = first_cols[:]
+    cols_reordered.extend(c for c df.columns if c not in first_cols)
+    return df[cols_reordered]
+
+
 if __name__ == '__main__':
 
     if not len(sys.argv) > 2:
@@ -54,12 +61,12 @@ if __name__ == '__main__':
     df_tmp['SNR'] = df_tmp['EXPOSURE_TIME'] + (df_tmp['nufnu_3keV'] / df_tmp['nufnu_error_3keV'])
 
     # Give a name to the objects
-    df_tmp['Name'] = designation(coords.icrs.ra, coords.icrs.dec)
+    df_tmp['NAME'] = designation(coords.icrs.ra, coords.icrs.dec)
 
     if df_final is not None:
         min_index = df_final['OBJID'].max() + 1
         df_tmp['OBJID'] = numpy.arange(min_index, len(df_tmp)+min_index)
-        df = pandas.concat([df_final, df_tmp], axis=0, ignore_index=True)
+        df = pandas.concat([df_final, df_tmp], axis=0, ignore_index=True, sort=False)
     else:
         df = df_tmp
 
