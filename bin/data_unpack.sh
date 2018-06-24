@@ -75,7 +75,9 @@ function merge_flux_tables () {
   cut -d';' -f 3-4,6- "$FILEIN_CRATE" > "$FILETMP_CRATE"
   paste -d';' "$FILEIN_FLUX" "$FILETMP_CRATE" > "$FILETMP_MERGE"
 
-  cat "$FILETMP_MERGE" >> "$FILEOUT"
+  # cat "$FILETMP_MERGE" >> "$FILEOUT"
+  sed -E -e '1,1s/$/;RUNID/' -e '2,$s/$/;'"$RUNID"'/' "$FILETMP_MERGE" >> "$FILEOUT"
+
   echo "Files '$FILEIN_FLUX' and '$FILEIN_CRATE' merged and appended to '$FILEOUT'"
 
   # Remove lock
