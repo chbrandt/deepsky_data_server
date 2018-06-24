@@ -4,8 +4,22 @@ import os
 
 import pandas
 import numpy
+import astropy
+
 
 SEP = ';'
+
+
+def designation(ra, dec):
+    from astropy import coordinates as coord
+    assert all(isinstance(c, coord.Angle) for c in [ra, dec])
+
+    ras = ra.to_string(decimal=False, pad=True, precision=1, fields=3, alwayssign=False, sep='')
+    decs = dec.to_string(decimal=False, pad=True, precision=1, fields=3, alwayssign=True, sep='')
+
+    desig = list(map(lambda a, b: 'SDSX_J{}{}'.format(a, b), ras, decs))
+    return desig
+
 
 if __name__ == '__main__':
 
@@ -38,6 +52,9 @@ if __name__ == '__main__':
     df_tmp['DEC'] = coords.icrs.dec
 
     df_tmp['SNR'] = df_tmp['EXPOSURE_TIME'] + (df_tmp['nufnu_3keV'] / df_tmp['nufnu_error_3keV'])
+
+    # Give a name to the objects
+    df_tmp['Name'] = designation(coords.icrs.ra, coords.icrs.dec)
 
     if df_final is not None:
         min_index = df_final['OBJID'].max() + 1
