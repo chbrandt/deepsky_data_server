@@ -2,6 +2,9 @@
 set -ue
 shopt -s nullglob
 
+THIS=$(basename $BASH_SOURCE)
+HERE=$(cd `dirname $BASH_SOURCE`; pwd)
+
 function do_inotify_job () {
   local UPLOAD_DIR="$1"
 
