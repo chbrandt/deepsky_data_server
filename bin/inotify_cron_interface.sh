@@ -9,6 +9,9 @@ function do_inotify_job () {
   local UPLOAD_DIR="$1"
 
   FILES=(${UPLOAD_DIR}/*.tar)
+
+  [[ ${#FILES[@]} -eq 0 ]] && return 0
+
   for FILE_i in ${FILES[*]}; do
     FILE=$(basename "$FILE_i")
     "${HERE}/../bin/data_move_stage.sh" _fakesignal_ "$FILE" "$UPLOAD_DIR"
