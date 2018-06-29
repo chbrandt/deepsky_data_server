@@ -14,8 +14,10 @@ def designation(ra, dec):
     from astropy import coordinates as coord
     assert all(isinstance(c, coord.Angle) for c in [ra, dec])
 
-    ras = ra.to_string(decimal=False, pad=True, precision=1, fields=3, alwayssign=False, sep='')
-    decs = dec.to_string(decimal=False, pad=True, precision=1, fields=3, alwayssign=True, sep='')
+    ras = ra.to_string(unit='hourangle', decimal=False, pad=True,
+                        precision=1, fields=3, alwayssign=False, sep='')
+    decs = dec.to_string(unit='degree', decimal=False, pad=True,
+                        precision=1, fields=3, alwayssign=True, sep='')
 
     desig = list(map(lambda a, b: 'SDSX_J{}{}'.format(a, b), ras, decs))
     return desig
